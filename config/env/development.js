@@ -3,7 +3,7 @@
 module.exports = {
 	db: 'mongodb://localhost/mean-dev',
 	app: {
-		title: 'MEAN.JS - Development Environment'
+		title: 'Nfolio'
 	},
 	facebook: {
 		clientID: process.env.FACEBOOK_ID || 'APP_ID',

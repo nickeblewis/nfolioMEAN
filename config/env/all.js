@@ -2,7 +2,7 @@
 
 module.exports = {
 	app: {
-		title: 'MEAN.JS',
+		title: 'Nfolio',
 		description: 'Full-Stack JavaScript with MongoDB, Express, AngularJS, and Node.js',
 		keywords: 'mongodb, express, angularjs, node.js, mongoose, passport'
 	},
@@ -22,7 +22,8 @@ module.exports = {
 				'public/lib/angular-animate/angular-animate.js',
 				'public/lib/angular-ui-router/release/angular-ui-router.js',
 				'public/lib/angular-ui-utils/ui-utils.js',
-				'public/lib/angular-bootstrap/ui-bootstrap-tpls.js'
+				'public/lib/angular-bootstrap/ui-bootstrap-tpls.js',
+        'public/lib/ng-file-upload/angular-file-upload.min.js'
 			]
 		},
 		css: [
