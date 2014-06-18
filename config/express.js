@@ -24,11 +24,11 @@ var express = require('express'),
     aws = require('aws-sdk');
 
 
-var s3Client = s3.createClient({
-  key: '<your_key>',
-  secret: '<your_secret>',
-  bucket: '<your_bucket>'
-});
+// var s3Client = s3.createClient({
+//   key: '<your_key>',
+//   secret: '<your_secret>',
+//   bucket: '<your_bucket>'
+// });
 
 module.exports = function(db) {
 	// Initialize express app
@@ -47,16 +47,17 @@ module.exports = function(db) {
         'Content-Length': file.size,
         'Content-Type': contentType
       };
-      var uploader = s3Client.upload(file.path, destPath, headers);
+      // var uploader = s3Client.upload(file.path, destPath, headers);
 
-      uploader.on('error', function(err) {
-        //TODO handle this
-      });
+      // uploader.on('error', function(err) {
+      //   //TODO handle this
+      // });
 
-      uploader.on('end', function(url) {
-        //TODO do something with the url
-        console.log('file opened:', url);
-      });
+      // uploader.on('end', function(url) {
+      //   //TODO do something with the url
+      //   console.log('file opened:', url);
+      // });
+    	console.log('File uploaded ', file);
     });
   });
   

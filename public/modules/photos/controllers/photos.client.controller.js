@@ -6,30 +6,31 @@ angular.module('photos').controller('PhotosController', ['$scope', '$stateParams
 		$scope.authentication = Authentication;
 
       $scope.onFileSelect = function(image) {
-  $scope.uploadInProgress = true;
-  $scope.uploadProgress = 0;
+		  $scope.uploadInProgress = true;
+		  $scope.uploadProgress = 0;
 
-  if (angular.isArray(image)) {
-    image = image[0];
-  }
+		  if (angular.isArray(image)) {
+		    image = image[0];
+		  }
 
-  $scope.upload = $upload.upload({
-    url: '/api/v1/upload/image',
-    method: 'POST',
-    data: {
-      type: 'profile'
-    },
-    file: image
-  }).progress(function(event) {
-    $scope.uploadProgress = Math.floor(event.loaded / event.total);
-    $scope.$apply();
-  }).success(function(data, status, headers, config) {
-//     AlertService.success('Photo uploaded!');
-  }).error(function(err) {
-    $scope.uploadInProgress = false;
-//     AlertService.error('Error uploading file: ' + err.message || err);
-  });
-};
+		  $scope.upload = $upload.upload({
+		    url: '/api/v1/upload/image',
+		    method: 'POST',
+		    data: {
+		      type: 'profile'
+		    },
+		    file: image
+		  }).progress(function(event) {
+		    $scope.uploadProgress = Math.floor(event.loaded / event.total);
+		    $scope.$apply();
+		  }).success(function(data, status, headers, config) {
+		//     AlertService.success('Photo uploaded!');
+		  }).error(function(err) {
+		    $scope.uploadInProgress = false;
+		//     AlertService.error('Error uploading file: ' + err.message || err);
+		  });
+		};
+		
 		// Create new Photo
 		$scope.create = function() {
 			// Create new Photo object
