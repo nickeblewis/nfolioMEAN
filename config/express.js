@@ -4,49 +4,46 @@
  * Module dependencies.
  */
 var express = require('express'),
-	morgan = require('morgan'),
-	bodyParser = require('body-parser'),
-	session = require('express-session'),
-	compress = require('compression'),
-	methodOverride = require('method-override'),
-	cookieParser = require('cookie-parser'),
-	helmet = require('helmet'),
-	passport = require('passport'),
-	mongoStore = require('connect-mongo')({
-		session: session
-	}),
-	flash = require('connect-flash'),
-	config = require('./config'),
-	consolidate = require('consolidate'),
-	path = require('path'),
-    uuid = require('uuid'),
-    multiparty = require('multiparty'),
-    aws = require('aws-sdk');
-
-
-// var s3Client = s3.createClient({
-//   key: '<your_key>',
-//   secret: '<your_secret>',
-//   bucket: '<your_bucket>'
-// });
+  morgan = require('morgan'),
+  bodyParser = require('body-parser'),
+  session = require('express-session'),
+  compress = require('compression'),
+  methodOverride = require('method-override'),
+  cookieParser = require('cookie-parser'),
+  helmet = require('helmet'),
+  passport = require('passport'),
+  mongoStore = require('connect-mongo')({session: session}),
+  flash = require('connect-flash'),
+  config = require('./config'),
+  consolidate = require('consolidate'),
+  path = require('path'),
+  fs = require('fs'),
+  uuid = require('uuid'),
+  multiparty = require('multiparty'),
+  AWS = require('aws-sdk'),
+  im = require('imagemagick'),
+    gm= require('gm');
 
 module.exports = function(db) {
-	// Initialize express app
-	var app = express();
+  // Initialize express app
+  var app = express();
 
   app.post('/api/v1/upload/image', function(req, res) {
     var form = new multiparty.Form();
     form.parse(req, function(err, fields, files) {
+      
       var file = files.file[0];
       var contentType = file.headers['content-type'];
       var extension = file.path.substring(file.path.lastIndexOf('.'));
       var destPath = '/profile' + '/' + uuid.v4() + extension;
 
-      var headers = {
-        'x-amz-acl': 'public-read',
-        'Content-Length': file.size,
-        'Content-Type': contentType
-      };
+    
+//       var headers = {
+//         'x-amz-acl': 'public-read',
+//         'Content-Length': file.size,
+//         'Content-Type': contentType
+//       };
+      
       // var uploader = s3Client.upload(file.path, destPath, headers);
 
       // uploader.on('error', function(err) {
@@ -57,7 +54,54 @@ module.exports = function(db) {
       //   //TODO do something with the url
       //   console.log('file opened:', url);
       // });
-    	console.log('File uploaded ', file);
+      
+      var s3 = new AWS.S3();
+      
+      // Create a bucket and upload something into it
+      var bucketName = 'small-' + 'nfolio-' + uuid.v4();
+      var keyName = file.originalFilename;
+
+//       console.log(file);
+      
+      im.readMetadata(file.path, function(err, metadata){
+        if (err) throw err;
+        console.log('Shot at ' + metadata.exif.dateTimeOriginal);
+      });
+            
+      im.identify(file.path, function(err, features) {
+        if (err) throw err;
+        console.log(features);
+      });
+      
+      var stdout;
+      
+//       im.resize({
+//         srcData: file.path,
+//         dstData: 'sm' + file.path,
+//         width: 256        
+//       }, function(err, stdout, stderr) {
+//         if (err) throw err;
+//         console.log('resize worked out ok');
+//       });
+      
+      var rs = fs.createReadStream(file.path);
+      
+      s3.createBucket({Bucket: bucketName}, function() {
+        var params = {Bucket: bucketName, Key: keyName, ContentLength: file.size, Body: rs};
+        console.log(bucketName);
+        s3.putObject(params, function(err, data) {
+          if (err)
+            console.log(err);
+          else
+            console.log('Successfully uploaded data to ' + bucketName + '/' + keyName);
+        });
+      });
+      // console.log('File uploaded ', file);
+//       gm(file.path)
+//         .resize('100^', '100^')
+//         .stream(function(err, stdout, stderr) {
+//           console.log('stream data man');
+//         });
     });
   });
   
