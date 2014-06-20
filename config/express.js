@@ -21,8 +21,9 @@ var express = require('express'),
   uuid = require('uuid'),
   multiparty = require('multiparty'),
   AWS = require('aws-sdk'),
-  im = require('imagemagick'),
-    gm= require('gm');
+  im = require('imagemagick');
+//     gm = require('gm').subClass({ imageMagick: true });
+//     resize = require('image-resize-stream');
 
 module.exports = function(db) {
   // Initialize express app
@@ -35,11 +36,8 @@ module.exports = function(db) {
       var file = files.file[0];
       var contentType = file.headers['content-type'];
       var extension = file.path.substring(file.path.lastIndexOf('.'));
-      var destPath = '/nicklewis/profile' + '/' + uuid.v4() + extension;      
+//       var destPath = '/nicklewis/profile' + '/' + uuid.v4() + extension;      
       var userName = 'nicklewis';
-      
-      console.log(req.params);
-      
       AWS.config.loadFromPath('./config/config.json');
       
       var s3 = new AWS.S3();
@@ -48,17 +46,32 @@ module.exports = function(db) {
       var bucketName = 'nfolio-images';
       var keyName = userName + '/' + uuid.v4() + '/' + file.originalFilename;
       var fullPath = bucketName + '/' + keyName;
-         
+      var tmpFile = 'tmp/images/' + uuid.v4();
+           
+      im.resize({
+        srcPath: file.path,
+        dstPath: tmpFile,
+        width:42,
+        height:42
+      }, function(err, stdout, stderr){
+        if (err) {
+          console.log('error while resizing images' + stderr);
+        } else {
+          console.log('Image resized successfully: ' + tmpFile);
+        }
+      });
+      
       var rs = fs.createReadStream(file.path);
-        var params = {Bucket: bucketName, Key: keyName, ContentLength: file.size, Body: rs};
-        s3.putObject(params, function(err, data) {
-          if (err)
-            console.log(err);
-          else
-            console.log('Successfully uploaded data to ' + fullPath);
+      var params = {Bucket: bucketName, Key: keyName, ContentLength: file.size, Body: rs};
+                  
+      s3.putObject(params, function(err, data) {
+        if (err)
+          console.log(err);
+        else
+          console.log('Successfully uploaded data to ' + fullPath);
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ fileName: fullPath }, null, 3));
-        });
+      });            
     });
   });
   
