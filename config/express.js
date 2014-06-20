@@ -35,73 +35,27 @@ module.exports = function(db) {
       var file = files.file[0];
       var contentType = file.headers['content-type'];
       var extension = file.path.substring(file.path.lastIndexOf('.'));
-      var destPath = '/profile' + '/' + uuid.v4() + extension;
-
-    
-//       var headers = {
-//         'x-amz-acl': 'public-read',
-//         'Content-Length': file.size,
-//         'Content-Type': contentType
-//       };
+      var destPath = '/nicklewis/profile' + '/' + uuid.v4() + extension;
       
-      // var uploader = s3Client.upload(file.path, destPath, headers);
-
-      // uploader.on('error', function(err) {
-      //   //TODO handle this
-      // });
-
-      // uploader.on('end', function(url) {
-      //   //TODO do something with the url
-      //   console.log('file opened:', url);
-      // });
+      AWS.config.loadFromPath('./config/config.json');
       
       var s3 = new AWS.S3();
       
       // Create a bucket and upload something into it
-      var bucketName = 'small-' + 'nfolio-' + uuid.v4();
-      var keyName = file.originalFilename;
-
-//       console.log(file);
-      
-      im.readMetadata(file.path, function(err, metadata){
-        if (err) throw err;
-        console.log('Shot at ' + metadata.exif.dateTimeOriginal);
-      });
-            
-      im.identify(file.path, function(err, features) {
-        if (err) throw err;
-        console.log(features);
-      });
-      
-      var stdout;
-      
-//       im.resize({
-//         srcData: file.path,
-//         dstData: 'sm' + file.path,
-//         width: 256        
-//       }, function(err, stdout, stderr) {
-//         if (err) throw err;
-//         console.log('resize worked out ok');
-//       });
-      
+      var bucketName = 'nfolio-images';
+      var keyName = uuid.v4() + file.originalFilename;
+      var fullPath = bucketName + '/' + keyName;
+         
       var rs = fs.createReadStream(file.path);
-      
-      s3.createBucket({Bucket: bucketName}, function() {
         var params = {Bucket: bucketName, Key: keyName, ContentLength: file.size, Body: rs};
-        console.log(bucketName);
         s3.putObject(params, function(err, data) {
           if (err)
             console.log(err);
           else
-            console.log('Successfully uploaded data to ' + bucketName + '/' + keyName);
+            console.log('Successfully uploaded data to ' + fullPath);
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ fileName: fullPath }, null, 3));
         });
-      });
-      // console.log('File uploaded ', file);
-//       gm(file.path)
-//         .resize('100^', '100^')
-//         .stream(function(err, stdout, stderr) {
-//           console.log('stream data man');
-//         });
     });
   });
   
