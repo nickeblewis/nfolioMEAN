@@ -1,46 +1,45 @@
 <section data-ng-controller="PhotosController">
-    <div class="page-header">
-        <h1>New Photo</h1>
-    </div>
-    <div class="col-md-12">
-        <form class="form-horizontal" data-ng-submit="create()" novalidate>
-            <fieldset>
-                <div class="form-group">
-                    <label class="control-label" for="name">Name</label>
-                    <div class="controls">
-                        <input type="text" data-ng-model="name" id="name" class="form-control" placeholder="Name" required>
-                    </div>
-                </div>
-                <div class="form-group">
-					        <label class="control-label" for="content">Content</label>
-					          <div class="controls">
-						          <textarea data-ng-model="content" id="content" class="form-control" cols="30" rows="10" placeholder="Content"></textarea>
-					          </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label" for="filename">Filename</label>
-                    <div class="controls">
-                        <input type="text" readonly data-ng-model="filename" id="filename" class="form-control" placeholder="Filename" required>
-                    </div>
-                </div>
-            <div class="upload-div">
-		<input type="text" ng-model="myModel">
-		choose a single file: <input type="file" ng-file-select="onFileSelect($files)" ng-click="resetInputFile()">
+  <div class="page-header">
+    <h1>New Photo</h1>
+  </div>
+  <div class="col-md-12">
+    <form class="form-horizontal" data-ng-submit="create()" novalidate>
+      <fieldset>
+        <div class="form-group">
+          <label class="control-label" for="name">Name</label>
+          <div class="controls">
+            <input type="text" data-ng-model="name" id="name" class="form-control" placeholder="Name" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label" for="content">Content</label>
+          <div class="controls">
+            <textarea data-ng-model="content" id="content" class="form-control" cols="30" rows="10" placeholder="Content"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label" for="filename">Filename</label>
+          <div class="controls">
+            <input type="text" readonly data-ng-model="filename" id="filename" class="form-control" placeholder="Filename" required>
+          </div>
+        </div>
+        <div class="upload-div">
+<!--           <input type="text" ng-model="myModel">
+          choose a single file: <input type="file" ng-file-select="onFileSelect($files)" ng-click="resetInputFile()">
+          <br/> -->
+<!--           or multiple files: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="file" ng-file-select="onFileSelect($files)" multiple ng-click="resetInputFile()">
+		      <br/>
+		      <br/> -->
+		      <div ng-show="dropSupported" class="drop-box" ng-file-drop="onFileSelect($files);" ng-file-drop-available="dropSupported=true">Drop file here</div>
+		      <div ng-show="!dropSupported">HTML5 Drop File is not supported on this browser</div>
+		      <br/>
+          <div class="err" ng-show="errorMsg != null">{{errorMsg}}</div>
+          <div class="alert alert-success" ng-show="successMsg != null">{{successMsg}}</div>
+<!--           <br/>
+		      Progress:
 		<br/>
-		or multiple files: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="file" ng-file-select="onFileSelect($files)" multiple ng-click="resetInputFile()">
-		<br/>
-		<br/>
-		<div ng-show="dropSupported" class="drop-box" ng-file-drop="onFileSelect($files);" ng-file-drop-available="dropSupported=true">or drop files here</div>
-		<div ng-show="!dropSupported">HTML5 Drop File is not supported on this browser</div>
-		<br/>
-<!-- 		<input type="checkbox" ng-model="uploadRightAway">Upload right away
 		<br/> -->
-		<div class="err" ng-show="errorMsg != null">{{errorMsg}}</div>
-		<br/>
-		Progress:
-		<br/>
-		<br/>
-		<div ng-show="selectedFiles != null">
+<!-- 		<div ng-show="selectedFiles != null">
 			<div class="sel-file" ng-repeat="f in selectedFiles">
 				{{($index + 1) + '.'}}
 				<img ng-show="dataUrls[$index]" ng-src="{{dataUrls[$index]}}">
@@ -51,8 +50,8 @@
 				<button class="button" ng-click="abort($index)" ng-show="hasUploader($index) && progress[$index] < 100">Abort</button>
 				{{f.name}} - size: {{f.size}}B - type: {{f.type}}
 			</div>
-		</div>
-		<div class="response" ng-show="uploadResult.length > 0">
+		</div> -->
+<!-- 		<div class="response" ng-show="uploadResult.length > 0">
 			Server Response:
 			<ul>
 				<li ng-repeat="result in uploadResult">
@@ -67,7 +66,7 @@
 					<div data-ng-show="result.requestHeaders" class="reqh">request headers: {{result.requestHeaders}}</div>
 				</li>
 			</ul>
-		</div>
+		</div> -->
 	</div>
                 <div class="form-group">
                     <input type="submit" class="btn btn-default">

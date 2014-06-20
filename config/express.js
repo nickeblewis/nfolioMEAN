@@ -35,7 +35,10 @@ module.exports = function(db) {
       var file = files.file[0];
       var contentType = file.headers['content-type'];
       var extension = file.path.substring(file.path.lastIndexOf('.'));
-      var destPath = '/nicklewis/profile' + '/' + uuid.v4() + extension;
+      var destPath = '/nicklewis/profile' + '/' + uuid.v4() + extension;      
+      var userName = 'nicklewis';
+      
+      console.log(req.params);
       
       AWS.config.loadFromPath('./config/config.json');
       
@@ -43,7 +46,7 @@ module.exports = function(db) {
       
       // Create a bucket and upload something into it
       var bucketName = 'nfolio-images';
-      var keyName = uuid.v4() + file.originalFilename;
+      var keyName = userName + '/' + uuid.v4() + '/' + file.originalFilename;
       var fullPath = bucketName + '/' + keyName;
          
       var rs = fs.createReadStream(file.path);
