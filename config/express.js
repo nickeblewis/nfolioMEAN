@@ -36,42 +36,62 @@ module.exports = function(db) {
       var file = files.file[0];
       var contentType = file.headers['content-type'];
       var extension = file.path.substring(file.path.lastIndexOf('.'));
-//       var destPath = '/nicklewis/profile' + '/' + uuid.v4() + extension;      
+      //var destPath = '/nicklewis/profile' + '/' + uuid.v4() + extension;      
+      
+      // TODO: Pass in the username from the front-end and store it in this variable
       var userName = 'nicklewis';
+      
+      // Loads the credentials from a file on the server (more secure)
       AWS.config.loadFromPath('./config/config.json');
       
       var s3 = new AWS.S3();
       
-      // Create a bucket and upload something into it
+      // TODO: Thinking of storing this in a config file or passing it in from client???
       var bucketName = 'nfolio-images';
+      
+      // TODO: Merge fullpath and keyname variables together for cleaner code?
+      // TODO: Need to introduce another directory level for different image sizes
+      // TODO: Original image is passed to server by client and this function creates variants
+      // TODO: Thumb, medium, original - what other sizes are likely to be needed??
       var keyName = userName + '/' + uuid.v4() + '/' + file.originalFilename;
       var fullPath = bucketName + '/' + keyName;
+      
+      // TODO: I would prefere that this was a similar name to that of the main image
+      // TODO: Must delete these temporary files as soon as they are uploaded
       var tmpFile = 'tmp/images/' + uuid.v4();
            
+      // STEP 1 - RESIZE
+      // TODO: Would it be better to pass in sizes from client??      
       im.resize({
         srcPath: file.path,
         dstPath: tmpFile,
-        width:42,
-        height:42
+        width:250,
+        height:250
       }, function(err, stdout, stderr){
         if (err) {
+          // It is possible that the resize may fail, perhaps lack of memory or some other reason?
+          // TODO: What should we do if the resize fails? Just pass a message back to the client???
           console.log('error while resizing images' + stderr);
         } else {
+          // STEP 2 - UPLOAD TO S3
+          // I moved this within this callback, so that we know the file has been resized and output file EXISTS!
           console.log('Image resized successfully: ' + tmpFile);
-        }
-      });
-      
-      var rs = fs.createReadStream(file.path);
-      var params = {Bucket: bucketName, Key: keyName, ContentLength: file.size, Body: rs};
+          var rs = fs.createReadStream(tmpFile);
+          var params = {Bucket: bucketName, Key: keyName, Body: rs};
                   
-      s3.putObject(params, function(err, data) {
-        if (err)
-          console.log(err);
-        else
-          console.log('Successfully uploaded data to ' + fullPath);
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ fileName: fullPath }, null, 3));
-      });            
+          s3.putObject(params, function(err, data) {
+            if (err) {
+              // TODO: Take action if this fails but in what way?
+              console.log(err);
+            } else {
+              // Success return the filename generated for this upload
+              console.log('Successfully uploaded data to ' + fullPath);
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ fileName: fullPath }, null, 3));
+            }
+          });
+        }
+      });                        
     });
   });
   
