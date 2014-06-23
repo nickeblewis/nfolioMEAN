@@ -19,7 +19,20 @@ angular.module('photos').controller('PhotosController', ['$scope', '$stateParams
         method: 'POST',
         data: {
           type: 'imagefile',
-          userName: 'nicklewis'
+          s3bucket: 'nfolio-images',
+          s3path: 'nicklewis',
+          sizes: [
+            {size: 'thumb', width:50, height:50},            
+            {size: 'medium', width:450, height:450}
+          ],
+          thumbnail: {
+            width: 500,
+            height: 500
+          },
+          medium: {
+            width: 500,
+            height: 500
+          }
         },
         file: image
       }).progress(function(event) {
@@ -28,7 +41,7 @@ angular.module('photos').controller('PhotosController', ['$scope', '$stateParams
       }).success(function(data, status, headers, config) {
         // AlertService.success('Photo uploaded!');
         console.log('File uploaded OK: ' + data.fileName);     
-        $scope.filename = data.fileName;
+        $scope.filename = 'https://s3-eu-west-1.amazonaws.com/' + data.fileName;
         $scope.successMsg = 'File uploaded: ' + data.fileName;
       }).error(function(err) {
         $scope.uploadInProgress = false;

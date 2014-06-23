@@ -1,5 +1,6 @@
 'use strict';
 
+// TODO: Break out the image upload feature as its own module and with its own dependencies for re-use in other projects
 /**
  * Module dependencies.
  */
@@ -30,9 +31,16 @@ module.exports = function(db) {
   var app = express();
 
   app.post('/api/v1/upload/image', function(req, res) {
+    
     var form = new multiparty.Form();
-    form.parse(req, function(err, fields, files) {
+    form.parse(req, function(err, fields, files) {  
       
+    var obj = JSON.parse(fields.sizes);
+      
+      
+      var medium = JSON.parse(fields.medium);
+      var thumbnail = JSON.parse(fields.thumbnail);
+               
       var file = files.file[0];
       var contentType = file.headers['content-type'];
       var extension = file.path.substring(file.path.lastIndexOf('.'));
@@ -41,13 +49,13 @@ module.exports = function(db) {
       // TODO: Pass in the username from the front-end and store it in this variable
       var userName = 'nicklewis';
       
-      // Loads the credentials from a file on the server (more secure)
-      AWS.config.loadFromPath('./config/config.json');
       
-      var s3 = new AWS.S3();
-      
+      // console.log(fields.s3bucket);
       // TODO: Thinking of storing this in a config file or passing it in from client???
       var bucketName = 'nfolio-images';
+      
+      // TODO: Imagefile, Avatar and so on
+      // var type = obj.type;
       
       // TODO: Merge fullpath and keyname variables together for cleaner code?
       // TODO: Need to introduce another directory level for different image sizes
@@ -59,14 +67,22 @@ module.exports = function(db) {
       // TODO: I would prefere that this was a similar name to that of the main image
       // TODO: Must delete these temporary files as soon as they are uploaded
       var tmpFile = 'tmp/images/' + uuid.v4();
-           
-      // STEP 1 - RESIZE
-      // TODO: Would it be better to pass in sizes from client??      
+      
+      resize(file,tmpFile,fullPath,bucketName,keyName,800,800);
+      
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ fileName: fullPath }, null, 3));                     
+    });
+  });
+
+  function resize(file,tmpFile,fullPath,bucketName,keyName,width,height) {
+    // STEP 1 - RESIZE
+      // TODO: Would it be better to pass in sizes from client??            
       im.resize({
         srcPath: file.path,
         dstPath: tmpFile,
-        width:250,
-        height:250
+        width: width,
+        height: height
       }, function(err, stdout, stderr){
         if (err) {
           // It is possible that the resize may fail, perhaps lack of memory or some other reason?
@@ -76,24 +92,32 @@ module.exports = function(db) {
           // STEP 2 - UPLOAD TO S3
           // I moved this within this callback, so that we know the file has been resized and output file EXISTS!
           console.log('Image resized successfully: ' + tmpFile);
-          var rs = fs.createReadStream(tmpFile);
-          var params = {Bucket: bucketName, Key: keyName, Body: rs};
+          sendToS3(tmpFile,fullPath,bucketName,keyName);
                   
-          s3.putObject(params, function(err, data) {
-            if (err) {
-              // TODO: Take action if this fails but in what way?
-              console.log(err);
-            } else {
-              // Success return the filename generated for this upload
-              console.log('Successfully uploaded data to ' + fullPath);
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ fileName: fullPath }, null, 3));
-            }
-          });
+          
         }
-      });                        
+      });
+  }
+  
+  function sendToS3(tmpFile,fullPath,bucketName,keyName) {
+    // Loads the credentials from a file on the server (more secure)
+      AWS.config.loadFromPath('./config/config.json');
+      
+      var s3 = new AWS.S3();
+    console.log(tmpFile);
+    var rs = fs.createReadStream(tmpFile);
+    var params = {Bucket: bucketName, Key: keyName, Body: rs};
+    s3.putObject(params, function(err, data) {
+      if (err) {
+        // TODO: Take action if this fails but in what way?
+        // TODO: Send a fail back to the client which should then message the user accordingly
+        console.log(err);
+      } else {
+        // Success return the filename generated for this upload
+        console.log('Successfully uploaded data to ' + fullPath);
+      }
     });
-  });
+  }
   
 	// Globbing model files
 	config.getGlobbedFiles('./app/models/**/*.js').forEach(function(modelPath) {
